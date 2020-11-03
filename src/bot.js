@@ -45,13 +45,18 @@ export default class WhatsappBot {
             return res.status(200).send(twiml.toString());
         }
 
+        if (searchParamArr[0] === "#list") {
+            let stocksData = JSON.parse(rawStocksData)
+            twiml.message(`The stocks you're watching are ${stocksData.stocks.join(", ")}`)            
+        }
+
         // Search Function
         const result = await customsearch.cse.list(options);
         // console.log(result.data.items)
         const allResult = result.data.items;
         let messageToSend = ""
 
-        allResult.forEach((item) => {
+        allResult.slice(0, 5).forEach((item) => {
             messageToSend = `${item.snippet} ${item.link} \n`
             twiml.message(messageToSend)
         })
