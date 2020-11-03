@@ -54,6 +54,8 @@ export default class WhatsappBot {
         allResult.forEach((item) => {
             messageToSend += `${item.snippet} ${item.link} \n`
         })
+
+        console.log(messageToSend)
         // const searchData = firstResult.snippet;
         // const link = firstResult.link;
   
