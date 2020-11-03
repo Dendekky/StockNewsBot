@@ -53,13 +53,13 @@ export default class WhatsappBot {
 
         allResult.forEach((item) => {
             messageToSend = `${item.snippet} ${item.link} \n`
-            twiml.message(messageToSend)
+            // twiml.message(messageToSend)
         })
         
         // const searchData = firstResult.snippet;
         // const link = firstResult.link;
   
-        // twiml.message(messageToSend);
+        twiml.message(`Hi ${messageToSend}`);
   
         res.set('Content-Type', 'text/xml');
     
