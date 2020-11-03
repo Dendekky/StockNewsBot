@@ -23,7 +23,6 @@ export default class WhatsappBot {
     
       const twiml = new MessagingResponse();
       const searchParam = req.body.Body;
-      const options = { cx: GOOGLECX, q: searchParam, auth: GOOGLEAPIKEY };
       const searchParamArr = searchParam.split(" ")
       let rawStocksData = fs.readFileSync('src/stocks.json')
 
@@ -47,26 +46,39 @@ export default class WhatsappBot {
 
         if (searchParamArr[0] === "#list") {
             let stocksData = JSON.parse(rawStocksData)
-            twiml.message(`The stocks you're watching are ${stocksData.stocks.join(", ")}`)            
+            twiml.message(`The stocks you're watching are ${stocksData.stocks.join(", ")}`)    
+            res.set('Content-Type', 'text/xml');
+            return res.status(200).send(twiml.toString());        
+        }
+
+        if (searchParamArr[0] === "#menu") {
+            twiml.message(`Features still limited. PRs acceptable! \n#menu: To get the menu list. \n#search 'phrase': to get top five results of the search. \n#list: To get list of stocks you're watching. \n#save 'stock': To add a stock to your list. \nBonus: You get news about your stocks daily.`)
+            res.set('Content-Type', 'text/xml');
+            return res.status(200).send(twiml.toString());
         }
 
         // Search Function
-        const result = await customsearch.cse.list(options);
-        // console.log(result.data.items)
-        const allResult = result.data.items;
-        let messageToSend = ""
+        if (searchParamArr[0] === '#search') {
+            searchParamArr.shift()
+            let newParamString = searchParamArr.join(" ")
+            const options = { cx: GOOGLECX, q: newParamString, auth: GOOGLEAPIKEY };
+            const result = await customsearch.cse.list(options);
+            // console.log(result.data.items)
+            const allResult = result.data.items;
+            let messageToSend = ""
 
-        allResult.slice(0, 5).forEach((item) => {
-            messageToSend = `${item.snippet} ${item.link} \n`
-            twiml.message(messageToSend)
-        })
+            allResult.slice(0, 5).forEach((item) => {
+                messageToSend = `${item.snippet} ${item.link} \n`
+                twiml.message(messageToSend)
+            })
+        
+            // twiml.message(messageToSend);
     
-        // twiml.message(messageToSend);
-  
-        res.set('Content-Type', 'text/xml');
-    
-        // return res.status(200).send({ data: allResult})
-        return res.status(200).send(twiml.toString());
+            res.set('Content-Type', 'text/xml');
+        
+            // return res.status(200).send({ data: allResult})
+            return res.status(200).send(twiml.toString());
+        }
       } catch (error) {
         return next(error);
       }
