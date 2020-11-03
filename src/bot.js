@@ -52,7 +52,7 @@ export default class WhatsappBot {
         let messageToSend = ""
 
         allResult.forEach((item) => {
-            messageToSend = `${item.snippet} ${item.link} \n`
+            messageToSend += `${item.snippet} ${item.link} \n`
             // twiml.message(messageToSend)
         })
         
