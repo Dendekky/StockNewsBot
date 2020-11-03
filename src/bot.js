@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
 import twilio from 'twilio';
+import fs from 'fs';
 dotenv.config();
 
 const { TWILIOSID, TWILIOAUTHTOKEN, GOOGLECX, GOOGLEAPIKEY } = process.env
@@ -19,21 +20,42 @@ export default class WhatsappBot {
      * @returns {object} - object representing response message
      */
     static async googleSearch(req, res, next) {
-        // console.log(req.body)
+    
       const twiml = new MessagingResponse();
-      const q = req.body.Body;
-      const options = { cx: GOOGLECX, q, auth: GOOGLEAPIKEY };
+      const searchParam = req.body.Body;
+      const options = { cx: GOOGLECX, q: searchParam, auth: GOOGLEAPIKEY };
+      const searchParamArr = searchParam.split(" ")
+      let rawStocksData = fs.readFileSync('src/stocks.json')
+
   
       try {
+        if (searchParamArr[0] === "#save") {
+            searchParamArr.shift()
+            let stocksData = JSON.parse(rawStocksData)
+            let newParamString = searchParamArr.join(" ")
+            stocksData.stocks.push(newParamString)
+            console.log(stocksData, searchParamArr)
+
+            let stringifiedStocksData = JSON.stringify(stocksData, null, 2)
+            fs.writeFileSync('src/stocks.json', stringifiedStocksData)
+            return res.status(200)
+        }
         const result = await customsearch.cse.list(options);
         console.log(result.data.items)
-        const firstResult = result.data.items[0];
-        const searchData = firstResult.snippet;
-        const link = firstResult.link;
+        const allResult = result.data.items;
+        let messageToSend = ""
+
+        allResult.forEach((item) => {
+            messageToSend += `${item.snippet} ${item.link} \n`
+        })
+        // const searchData = firstResult.snippet;
+        // const link = firstResult.link;
   
-        twiml.message(`${searchData} ${link}`);
+        twiml.message(messageToSend);
   
         res.set('Content-Type', 'text/xml');
+    
+        return res.status(200).send({ data: allResult})
   
         return res.status(200).send(twiml.toString());
       } catch (error) {
