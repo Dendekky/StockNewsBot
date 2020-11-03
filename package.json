@@ -4,10 +4,10 @@
   "description": "A whatspp bot that uses twilio and google search to deliver stock news",
   "main": "index.js",
   "scripts": {
-    "start": "npm run watch ./src/index.js",
+    "start": "npm run build && NODE_ENV=production node ./dist/index.js",
+    "dev": "npm run watch ./src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "nodemon --config ./nodemon.json --",
-    "prod": "npm run build && NODE_ENV=production node ./dist/index.js",
     "build": "npm run clean && babel ./src --out-dir dist",
     "clean": "rimraf dist"
   },
