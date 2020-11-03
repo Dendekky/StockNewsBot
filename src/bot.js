@@ -29,19 +29,25 @@ export default class WhatsappBot {
 
   
       try {
+        // Saving a new stock to the list
         if (searchParamArr[0] === "#save") {
             searchParamArr.shift()
             let stocksData = JSON.parse(rawStocksData)
             let newParamString = searchParamArr.join(" ")
             stocksData.stocks.push(newParamString)
-            console.log(stocksData, searchParamArr)
+            // console.log(stocksData, searchParamArr)
 
             let stringifiedStocksData = JSON.stringify(stocksData, null, 2)
             fs.writeFileSync('src/stocks.json', stringifiedStocksData)
-            return res.status(200)
+            twiml.message(`You have added ${newParamString} to the list. \n New list: ${stocksData.stocks.join(", ")}`)
+
+            res.set('Content-Type', 'text/xml');
+            return res.status(200).send(twiml.toString());
         }
+
+        // Search Function
         const result = await customsearch.cse.list(options);
-        console.log(result.data.items)
+        // console.log(result.data.items)
         const allResult = result.data.items;
         let messageToSend = ""
 
@@ -55,8 +61,7 @@ export default class WhatsappBot {
   
         res.set('Content-Type', 'text/xml');
     
-        return res.status(200).send({ data: allResult})
-  
+        // return res.status(200).send({ data: allResult})
         return res.status(200).send(twiml.toString());
       } catch (error) {
         return next(error);
