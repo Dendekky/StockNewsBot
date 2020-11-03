@@ -7,7 +7,7 @@
     "start": "npm run watch ./src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "nodemon --config ./nodemon.json --",
-    "build": "npm run clean && babel ./src --out-dir dist && node ./dist/index",
+    "build": "npm run clean && babel ./src --out-dir dist && node ./dist/index.js",
     "clean": "rimraf dist"
   },
   "author": "Ibrahim Adeniyi",
