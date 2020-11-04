@@ -28,56 +28,112 @@ export default class WhatsappBot {
 
   
       try {
-        // Saving a new stock to the list
-        if (searchParamArr[0] === "#save") {
-            searchParamArr.shift()
-            let stocksData = JSON.parse(rawStocksData)
-            let newParamString = searchParamArr.join(" ")
-            stocksData.stocks.push(newParamString)
-            // console.log(stocksData, searchParamArr)
+        switch(searchParamArr[0]){
+            // Saving a new stock to the list
+            case '#save':
+                searchParamArr.shift()
+                let stocksData = JSON.parse(rawStocksData)
+                let newParamString = searchParamArr.join(" ")
+                stocksData.stocks.push(newParamString)
+                // console.log(stocksData, searchParamArr)
 
-            let stringifiedStocksData = JSON.stringify(stocksData, null, 2)
-            fs.writeFileSync('src/stocks.json', stringifiedStocksData)
-            twiml.message(`You have added ${newParamString} to the list. \n New list: ${stocksData.stocks.join(", ")}`)
+                let stringifiedStocksData = JSON.stringify(stocksData, null, 2)
+                fs.writeFileSync('src/stocks.json', stringifiedStocksData)
+                twiml.message(`You have added ${newParamString} to the list. \nNew list: ${stocksData.stocks.join(", ")}`)
 
-            res.set('Content-Type', 'text/xml');
-            return res.status(200).send(twiml.toString());
-        }
+                res.set('Content-Type', 'text/xml');
+                return res.status(200).send(twiml.toString());
 
-        if (searchParamArr[0] === "#list") {
-            let stocksData = JSON.parse(rawStocksData)
-            twiml.message(`The stocks you're watching are ${stocksData.stocks.join(", ")}`)    
-            res.set('Content-Type', 'text/xml');
-            return res.status(200).send(twiml.toString());        
-        }
+            case '#list':
+                let stocksData = JSON.parse(rawStocksData)
+                twiml.message(`The stocks you're watching are ${stocksData.stocks.join(", ")}`)    
+                res.set('Content-Type', 'text/xml');
+                return res.status(200).send(twiml.toString());
 
-        if (searchParamArr[0] === "#menu") {
-            twiml.message(`Features still limited. PRs acceptable! \n#menu: To get the menu list. \n#search 'phrase': to get top five results of the search. \n#list: To get list of stocks you're watching. \n#save 'stock': To add a stock to your list. \nBonus: You get news about your stocks daily.`)
-            res.set('Content-Type', 'text/xml');
-            return res.status(200).send(twiml.toString());
-        }
+            case '#menu':
+                twiml.message(
+                    `Features still limited. PRs acceptable! \n#menu: To get the menu list. 
+                    \n#search 'phrase': to get top five results of the search. \n#list: To get list of stocks you're watching. 
+                    \n#save 'stock': To add a stock to your list. \nBonus: You get news about your stocks daily.`
+                )
+                res.set('Content-Type', 'text/xml');
+                return res.status(200).send(twiml.toString());
+
+            case '#search':
+                searchParamArr.shift()
+                let newParamString = searchParamArr.join(" ")
+                const options = { cx: GOOGLECX, q: newParamString, auth: GOOGLEAPIKEY };
+                const result = await customsearch.cse.list(options);
+                const allResult = result.data.items;
+                let messageToSend = ""
+    
+                allResult.slice(0, 5).forEach((item) => {
+                    messageToSend = `${item.snippet} ${item.link} \n`
+                    twiml.message(messageToSend)
+                })
+            
+                // twiml.message(messageToSend);
+        
+                res.set('Content-Type', 'text/xml');
+            
+                // return res.status(200).send({ data: allResult})
+                return res.status(200).send(twiml.toString());
+            
+
+        // if (searchParamArr[0] === "#save") {
+        //     searchParamArr.shift()
+        //     let stocksData = JSON.parse(rawStocksData)
+        //     let newParamString = searchParamArr.join(" ")
+        //     stocksData.stocks.push(newParamString)
+        //     // console.log(stocksData, searchParamArr)
+
+        //     let stringifiedStocksData = JSON.stringify(stocksData, null, 2)
+        //     fs.writeFileSync('src/stocks.json', stringifiedStocksData)
+        //     twiml.message(`You have added ${newParamString} to the list. \nNew list: ${stocksData.stocks.join(", ")}`)
+
+        //     res.set('Content-Type', 'text/xml');
+        //     return res.status(200).send(twiml.toString());
+        // }
+
+        // if (searchParamArr[0] === "#list") {
+        //     let stocksData = JSON.parse(rawStocksData)
+        //     twiml.message(`The stocks you're watching are ${stocksData.stocks.join(", ")}`)    
+        //     res.set('Content-Type', 'text/xml');
+        //     return res.status(200).send(twiml.toString());        
+        // }
+
+        // if (searchParamArr[0] === "#menu") {
+        //     twiml.message(
+        //         `Features still limited. PRs acceptable! \n#menu: To get the menu list. 
+        //         \n#search 'phrase': to get top five results of the search. \n#list: To get list of stocks you're watching. 
+        //         \n#save 'stock': To add a stock to your list. \nBonus: You get news about your stocks daily.`
+        //     )
+        //     res.set('Content-Type', 'text/xml');
+        //     return res.status(200).send(twiml.toString());
+        // }
 
         // Search Function
-        if (searchParamArr[0] === '#search') {
-            searchParamArr.shift()
-            let newParamString = searchParamArr.join(" ")
-            const options = { cx: GOOGLECX, q: newParamString, auth: GOOGLEAPIKEY };
-            const result = await customsearch.cse.list(options);
-            // console.log(result.data.items)
-            const allResult = result.data.items;
-            let messageToSend = ""
+        // if (searchParamArr[0] === '#search') {
+        //     searchParamArr.shift()
+        //     let newParamString = searchParamArr.join(" ")
+        //     const options = { cx: GOOGLECX, q: newParamString, auth: GOOGLEAPIKEY };
+        //     const result = await customsearch.cse.list(options);
+        //     // console.log(result.data.items)
+        //     const allResult = result.data.items;
+        //     let messageToSend = ""
 
-            allResult.slice(0, 5).forEach((item) => {
-                messageToSend = `${item.snippet} ${item.link} \n`
-                twiml.message(messageToSend)
-            })
+        //     allResult.slice(0, 5).forEach((item) => {
+        //         messageToSend = `${item.snippet} ${item.link} \n`
+        //         twiml.message(messageToSend)
+        //     })
         
-            // twiml.message(messageToSend);
+        //     // twiml.message(messageToSend);
     
-            res.set('Content-Type', 'text/xml');
+        //     res.set('Content-Type', 'text/xml');
         
-            // return res.status(200).send({ data: allResult})
-            return res.status(200).send(twiml.toString());
+        //     // return res.status(200).send({ data: allResult})
+        //     return res.status(200).send(twiml.toString());
+        // }
         }
       } catch (error) {
         return next(error);
